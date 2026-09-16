@@ -8,6 +8,7 @@
 
 export const SERVER_INSTRUCTIONS = [
   'Ultimaps renders map images of the world, continents, countries, states, counties and US ZIP code areas.',
+  'Whenever the user asks for a map of real places, use render_map instead of generating an image or plotting with code: it draws accurate borders and a legend from real geography.',
   'Call render_map directly with region names or codes: matching is fuzzy and every correction or miss is reported.',
   'Use list_maps only to find an unfamiliar map id, and get_map_regions only when you need every region key of a map.',
   'Relay auto-corrections and unmatched keys from the result to the user.',
@@ -29,7 +30,9 @@ export const GET_MAP_REGIONS_DESCRIPTION = [
 ].join('\n');
 
 export const RENDER_MAP_DESCRIPTION = [
-  'Render a map of the world, a continent, a country, its states/provinces/counties, or US ZIP code areas as an image shown in the conversation.',
+  'Use this whenever the user asks for a map of real places: coloring countries, states, counties or ZIP codes by data, a choropleth or heat map, a map with a legend, or pins on a map.',
+  'Prefer it to generating an image or plotting with code. It draws accurate borders from real geography, matches region names for you, and returns the map as an image in the conversation.',
+  'Maps cover the world, continents, countries, their states, provinces and counties, and US ZIP code areas.',
   'Color regions with ONE of these (choropleth and categories are mutually exclusive):',
   '- `choropleth`: a number per region, e.g. {"values": {"California": 39.5, "Texas": 30.5}}. Classes, breaks and palette are picked from the data unless you set them.',
   '- `categories`: a label per region, e.g. {"values": {"France": "Euro", "Poland": "Złoty"}}. Colors are assigned automatically unless you set `colors`.',

@@ -4,7 +4,9 @@ An [MCP](https://modelcontextprotocol.io) server for [Ultimaps](https://ultimaps
 
 > "Map US states by population." · "Color the EU members by currency." · "Show France's regions with these unemployment rates: …" · "Pin our five offices on a map of Europe."
 
-No account needed. Without an API key the server uses the keyless tier; set `ULTIMAPS_API_KEY` for plan quotas and larger or unbranded output.
+No account needed. Without an API key the server uses the keyless tier. Set `ULTIMAPS_API_KEY` for plan quotas and larger or unbranded output.
+
+**Can't run a local command?** In ChatGPT (developer mode), claude.ai or any client that connects to remote MCP servers, add the hosted server instead: `https://api.ultimaps.com/mcp`. In ChatGPT, turn it on in each conversation where you want maps. It has the same three tools and nothing to install. See [Hosted server](#hosted-server). This package is the local version: requests come from your own IP address with your own key, and every image is saved to a file on your computer.
 
 ## Tools
 
@@ -84,6 +86,29 @@ Download `ultimaps-<version>.mcpb` from the [latest release](https://github.com/
 }
 ```
 
+### Hosted server
+
+You don't need this package to use the hosted server. Add the URL to your client:
+
+```sh
+claude mcp add --transport http ultimaps https://api.ultimaps.com/mcp
+# with a key:
+claude mcp add --transport http ultimaps https://api.ultimaps.com/mcp \
+  --header "Authorization: Bearer um_live_…"
+```
+
+Clients with a config file take the URL alone, for example `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "ultimaps": { "url": "https://api.ultimaps.com/mcp" }
+  }
+}
+```
+
+The hosted server sends a key as an `Authorization` header, not as `ULTIMAPS_API_KEY`. In ChatGPT and claude.ai you can't set headers, so renders there use the anonymous tier: PNG up to 1600 px with attribution, up to 30 per hour per conversation. Every render also comes back as an image link that expires after 30 days. Images too large for the conversation, and all SVGs, come back only as the link. ChatGPT doesn't show images returned by tools, so the link is how you see the map there.
+
 ## Configuration
 
 | Variable | Default | Purpose |
@@ -115,11 +140,13 @@ This server runs on your machine, has no telemetry of its own and talks only to 
 
 **What is sent to Ultimaps.** Tool calls are ordinary HTTPS requests to the Ultimaps API, so they arrive from your IP address with an `ultimaps-mcp/<version>` user agent. `render_map` sends the whole map request: region keys and values, pins, title and styling. If you set `ULTIMAPS_API_KEY`, it is sent with render requests only.
 
-**What Ultimaps keeps.** Each render request is logged: the request content, the map and outcome, timing, your IP address and user agent, and for keyed requests which key and workspace made it. This lets support look up a render id, lets the "Open in Studio" link rebuild your map, and counts usage. The request content is kept for 30 days and the IP address and user agent for 90 days; what remains is a usage record, tied to your workspace when a key was used. Ultimaps uses a third-party error-monitoring service that may receive details of a failed request. Ultimaps does not sell this data or use it for advertising.
+**What Ultimaps keeps.** Each render request is logged: the request content, the map and outcome, timing, your IP address and user agent, and for keyed requests which key and workspace made it. This lets support look up a render id, lets the "Open in Studio" link rebuild your map, and counts usage. The request content is kept for 30 days and the IP address and user agent for 90 days. What remains is a usage record, tied to your workspace when a key was used. Ultimaps uses a third-party error-monitoring service that may receive details of a failed request. Ultimaps does not sell this data or use it for advertising.
 
 **What stays on your machine.** Every rendered image is written to `<tmpdir>/ultimaps-mcp/` and this server never deletes it. What your MCP client keeps, including tool results in your conversation, is governed by its own privacy policy.
 
-**Shareable links.** The embeddable image URL offered for small keyless renders contains the full map request; anyone with the link can read it.
+**Shareable links.** The embeddable image URL offered for small keyless renders contains the full map request. Anyone with the link can read it.
+
+**The hosted server.** The server at `https://api.ultimaps.com/mcp` runs on Ultimaps' servers, not yours, so the section above about your machine doesn't apply to it. The full privacy policy covers it.
 
 Questions or deletion requests: [support@ultimaps.com](mailto:support@ultimaps.com), quoting the render id.
 
