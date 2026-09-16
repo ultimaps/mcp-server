@@ -1,0 +1,67 @@
+{
+  "name": "@ultimaps/mcp",
+  "version": "0.1.0",
+  "description": "MCP server that turns data into map images: choropleth, category and pin maps of the world, countries, states, counties and ZIP codes.",
+  "mcpName": "com.ultimaps/mcp",
+  "license": "MIT",
+  "author": "Ultimaps (https://ultimaps.com)",
+  "homepage": "https://ultimaps.com/developers/#mcp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ultimaps/mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ultimaps/mcp-server/issues",
+    "email": "support@ultimaps.com"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "maps",
+    "map-image",
+    "choropleth",
+    "choropleth-map",
+    "thematic-map",
+    "data-visualization",
+    "geography",
+    "us-counties",
+    "zip-codes",
+    "ultimaps"
+  ],
+  "type": "module",
+  "bin": {
+    "ultimaps-mcp": "dist/index.js"
+  },
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src/generated",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/index.js",
+    "bundle": "node scripts/bundle.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@types/node": "^22.18.13",
+    "typescript": "5.7.3",
+    "vitest": "3.2.3"
+  }
+}

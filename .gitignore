@@ -1,0 +1,4 @@
+dist/
+bundle/
+*.mcpb
+node_modules/

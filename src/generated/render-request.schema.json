@@ -1,0 +1,554 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mapId"
+  ],
+  "properties": {
+    "mapId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Map id (slug) from GET /v1/maps, e.g. `united-states`, `europe`, `united-states-california`. Always resolves to the current edition of that map.\n",
+      "examples": [
+        "united-states"
+      ]
+    },
+    "choropleth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "values"
+      ],
+      "description": "Numeric choropleth mode. Mutually exclusive with `categories` (one scale per map). `regions` composes with it as an override layer. If none of the keys in `values` match, the request fails with 400 even under `onUnmatched: warn`, since there is nothing to build a scale from. `type`, `classes`, `method` and `palette` are all optional: whatever you leave out is suggested from the data distribution (the resolved plan is returned by `dryRun` and in the `X-Ultimaps-Choropleth` header).\n",
+      "properties": {
+        "values": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "minProperties": 1,
+          "maxProperties": 5000,
+          "description": "Region key to numeric value. Keys go through the matching rules described above. Two keys resolving to the same region count as two matched keys, and the later value wins.\n"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "gradient",
+            "steps",
+            "groups"
+          ],
+          "default": "auto",
+          "description": "Visualization type. `auto` picks from the data: ≤7 unique values → `groups` (discrete legend items), skewed distributions → `steps` (contiguous bar with break ticks), else `gradient` (continuous color scale). Explicit values pin the type. `gradient` and `steps` legends are horizontal-only: they render in a top/bottom band (default bottom), and a left/right `legend.position` is coerced to bottom with a warning. That rule depends on the data, so JSON Schema cannot express it and generated SDKs should not try to enforce it.\n"
+        },
+        "palette": {
+          "type": "string",
+          "enum": [
+            "gnbu",
+            "bugn",
+            "bupu",
+            "orrd",
+            "pubu",
+            "pubugn",
+            "purd",
+            "rdpu",
+            "ylgn",
+            "ylgnbu",
+            "ylorbr",
+            "ylorrd",
+            "blues",
+            "greens",
+            "greys",
+            "oranges",
+            "purples",
+            "reds",
+            "rdbu",
+            "brbg",
+            "spectral",
+            "piyg",
+            "prgn",
+            "puor",
+            "rdgy",
+            "rdylbu"
+          ],
+          "description": "ColorBrewer palette id (the server matches case-insensitively). Absent = suggested from the data: diverging when the values cross zero (rdbu when they sit symmetrically around zero, rdylgn when they do not), sequential blues otherwise. Note that `rdylgn` only comes back out. It is not in the enum above, and requesting it is a `400`. Sequential palettes suit one-directional data, and diverging palettes (rdbu, brbg, spectral, piyg, prgn, puor, rdgy, rdylbu) suit data around a midpoint.\n"
+        },
+        "classes": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 9,
+          "description": "Number of classes. Absent = suggested from the data (5 base, more for skewed distributions). Explicit counts are honored exactly, capped only by the number of unique values. Tied values can still collapse duplicate quantile edges, and a constant dataset collapses to one class. `dryRun` returns the breaks and effective class count that will actually be drawn.\n"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "quantile",
+            "equalInterval",
+            "jenks",
+            "pretty"
+          ],
+          "description": "Break method. Absent = suggested from the data. quantile = equal number of regions per class, equalInterval = equal-width value intervals, jenks = natural breaks (minimal within-class variance), pretty = rounded human-readable edges. Additive-only enum: more methods may be added, none removed.\n"
+        },
+        "noDataColor": {
+          "type": "string",
+          "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+          "examples": [
+            "#1D4ED8"
+          ],
+          "description": "Fill for regions absent from `values`. Choropleth mode only. Overrides `style.defaultRegionColor` when both are set.\n"
+        },
+        "format": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Number format for ALL choropleth surfaces: class labels, gradient ticks, and tooltips in interactive contexts. A preset string or a FormatSpec options object. Default \"auto\", which infers from the magnitude. Presets: `auto`, `plain` (39,538,223), `compact` (39.5M), `percent` (the input is a FRACTION, so 0.42 prints as \"42%\" and 0.423 as \"42.3%\". The preset trims trailing zeros. An explicit `{\"style\": \"percent\", \"decimals\": 1}` keeps them and prints \"42.0%\". Pre-scaled data should use `{\"suffix\": \"%\"}` instead), `currency` ($39,538,223, USD). Raw d3-format strings are no longer accepted. Use `{\"d3\": \"~s\"}` for the old behaviour. The dry run and the `X-Ultimaps-Choropleth` header echo the RESOLVED spec after preset expansion and auto inference.\n This tool schema publishes the object form only: pass {\"preset\": \"compact\"} rather than a bare string.",
+          "properties": {
+            "preset": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "plain",
+                "compact",
+                "percent",
+                "currency"
+              ],
+              "description": "Alias for the bare-string preset form."
+            },
+            "style": {
+              "type": "string",
+              "enum": [
+                "decimal",
+                "percent",
+                "currency"
+              ],
+              "default": "decimal",
+              "description": "\"percent\" MULTIPLIES BY 100. The input is a fraction (0.42 prints as \"42%\"). Data already in percent points should use `suffix: \"%\"` instead.\n"
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{3}$",
+              "default": "USD",
+              "description": "ISO-4217 code, rendered with its Intl symbol (\"€\", \"CA$\"). Only valid with style \"currency\".\n"
+            },
+            "compact": {
+              "type": "boolean",
+              "description": "Compact notation: K/M/B/T (never SI \"G\")."
+            },
+            "decimals": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6,
+              "description": "Fraction digits. Min equals max, for uniform labels, unless `trim` is set."
+            },
+            "significantDigits": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            },
+            "trim": {
+              "type": "boolean",
+              "description": "Strip trailing zeros."
+            },
+            "grouping": {
+              "type": "boolean",
+              "default": true,
+              "description": "Thousands separators."
+            },
+            "sign": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "always",
+                "exceptZero"
+              ],
+              "default": "auto",
+              "description": "Maps 1:1 to Intl signDisplay. \"exceptZero\" is the usual choice for diverging legends.\n"
+            },
+            "prefix": {
+              "type": "string",
+              "maxLength": 12,
+              "description": "Literal, inserted AFTER any leading sign (\"-€1,234\", never \"€-1,234\").\n"
+            },
+            "suffix": {
+              "type": "string",
+              "maxLength": 20,
+              "description": "Literal, e.g. \" per km²\"."
+            },
+            "d3": {
+              "type": "string",
+              "maxLength": 20,
+              "description": "Escape hatch: a raw d3-format spec. Invalid grammar is a 400.\n"
+            }
+          }
+        }
+      }
+    },
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "values"
+      ],
+      "description": "Categorical coloring mode. Mutually exclusive with `choropleth`. Unmatched keys simply leave their regions uncolored. The no-data fill is `style.defaultRegionColor`, and `noDataColor` does not apply here.\n",
+      "properties": {
+        "values": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minProperties": 1,
+          "maxProperties": 5000,
+          "description": "Region key to category name."
+        },
+        "colors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+            "examples": [
+              "#1D4ED8"
+            ]
+          },
+          "description": "Optional category name to color. Names are matched exactly and case-sensitively against the names in `values` (unlike region keys, which are matched loosely). An entry for a category no region uses is silently ignored. Unlisted categories get a color from a built-in categorical palette, assigned in order of first appearance in `values`, so pin the colors if you need stable output.\n"
+        }
+      }
+    },
+    "regions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+        "examples": [
+          "#1D4ED8"
+        ]
+      },
+      "maxProperties": 5000,
+      "description": "Override layer. Region key to hex color, applied AFTER choropleth/categories coloring and winning over it. Precedence: choropleth/categories paint first, `regions` overrides win, and everything else gets `choropleth.noDataColor` (choropleth mode), else `style.defaultRegionColor`, else the theme default.\n"
+    },
+    "legend": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right",
+            "top",
+            "bottom"
+          ],
+          "description": "left/right take a column carved from the map area (180 px, capped at 30% of the canvas width on narrow renders), where the legend items stack vertically. top/bottom take a horizontal band between the title and the map: 60 px for item legends (items flow in a single centered row), 70 px for gradient/steps bars. Absent = left for items/groups legends, bottom for gradient/steps. Gradient and steps legends are horizontal-only, so left/right is coerced to bottom with a warning. Legends do not wrap, so a wide legend on a narrow render can overflow the canvas. The `X-Ultimaps-Warnings` header estimates this.\n"
+        },
+        "show": {
+          "type": "boolean",
+          "description": "Defaults to true whenever a legend exists (auto-generated for `choropleth`/`categories`, or from `legend.items`). Set false to suppress it and give the whole canvas to the map.\n"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "description": "Manual legend items, for regions-only maps. With `choropleth` or `categories` the legend is auto-generated and `items` is rejected with 400.\n",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "color"
+            ],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+                "examples": [
+                  "#1D4ED8"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "title": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "position": {
+          "type": "string",
+          "enum": [
+            "top",
+            "bottom"
+          ],
+          "default": "top"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+          "examples": [
+            "#1D4ED8"
+          ]
+        }
+      }
+    },
+    "locations": {
+      "type": "array",
+      "maxItems": 200,
+      "description": "Pin markers. They compose with every mode.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "lat",
+          "lon"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+            "examples": [
+              "#1D4ED8"
+            ]
+          },
+          "labelPosition": {
+            "type": "string",
+            "enum": [
+              "top",
+              "bottom",
+              "left",
+              "right"
+            ],
+            "default": "bottom",
+            "description": "Where the pin's label sits relative to the pin."
+          },
+          "showLabel": {
+            "type": "boolean",
+            "default": true,
+            "description": "Set false to render this pin without its label (the marker stays).\n"
+          }
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "theme": {
+          "type": "string",
+          "default": "paper",
+          "enum": [
+            "paper",
+            "newspaper",
+            "dark",
+            "earth",
+            "vintage",
+            "embossed",
+            "maritime",
+            "neon",
+            "outline",
+            "wireframe"
+          ],
+          "description": "Theme name from Studio's theme gallery (the server matches case-insensitively). Additive-only enum.\n"
+        },
+        "backgroundColor": {
+          "type": "string",
+          "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+          "examples": [
+            "#1D4ED8"
+          ]
+        },
+        "defaultRegionColor": {
+          "type": "string",
+          "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+          "examples": [
+            "#1D4ED8"
+          ],
+          "description": "Fill for regions that get no color from `choropleth`/`categories`/`regions`. In choropleth mode `choropleth.noDataColor` overrides this. In categories mode this IS the no-data fill.\n"
+        },
+        "regionBorders": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "type": "string",
+              "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+              "examples": [
+                "#1D4ED8"
+              ]
+            },
+            "width": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            }
+          }
+        },
+        "mapBorder": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "type": "string",
+              "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+              "examples": [
+                "#1D4ED8"
+              ]
+            },
+            "width": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Region labels, off by default. Each map ships its own curated label set (`labels` in GET /v1/maps). On a map with none, `show: true` renders nothing and a `labels_unavailable` warning is reported.",
+          "properties": {
+            "show": {
+              "type": "boolean",
+              "default": false
+            },
+            "content": {
+              "type": "string",
+              "enum": [
+                "name",
+                "value"
+              ],
+              "default": "name",
+              "description": "What each label prints. `name` is the region's name. `value` prints the region's choropleth number instead, formatted by the resolved `choropleth.format` (the same string the legend and tooltips show). Regions without a value get no label. Requires `choropleth`. With `categories`, or with neither, it is a `validation_error`. Labels are not collision-checked: a long number in a small region overflows it, exactly as in Studio."
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$",
+              "examples": [
+                "#1D4ED8"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Extra geographic layers to draw, keyed by `LayerId`, e.g. {\"cities\": true, \"roads\": true}. Keys outside the enum are a `validation_error`. Each map ships a subset (see `layers` in GET /v1/maps/{mapId}). Turning on a layer this map lacks is not an error: the layer is skipped and a `layer_unavailable` warning is reported. Omitted layers are off, except layers the map source turns on by default (currently `admin0` on ZIP-code maps, the land no ZIP covers). Pass `false` to hide those.",
+      "properties": {
+        "admin0": {
+          "type": "boolean",
+          "description": "Surrounding land, as a filled area of neighbouring countries or states."
+        },
+        "admin0-mesh": {
+          "type": "boolean",
+          "description": "Country borders (mesh)."
+        },
+        "admin1-mesh": {
+          "type": "boolean",
+          "description": "First-level subdivision borders (states, provinces, regions)."
+        },
+        "admin1-mesh-inner": {
+          "type": "boolean",
+          "description": "State borders drawn over the map's own regions (county and ZIP maps, where `admin1-mesh` covers the surroundings only)."
+        },
+        "admin2-mesh": {
+          "type": "boolean",
+          "description": "Second-level subdivision borders (counties, districts)."
+        },
+        "lakes": {
+          "type": "boolean",
+          "description": "Major lakes."
+        },
+        "rivers": {
+          "type": "boolean",
+          "description": "Major rivers."
+        },
+        "roads": {
+          "type": "boolean",
+          "description": "Major roads."
+        },
+        "cities": {
+          "type": "boolean",
+          "description": "Major cities as labelled points."
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 4000,
+          "default": 1200
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 4000,
+          "description": "Optional. When omitted, derives as a snug fit: the map's aspect ratio applied to the map area that remains after the title band (50 px) and any left/right legend column take their cut. A top/bottom legend adds its band (60 px for item legends, 70 px for gradient/steps bars) on top of that. An explicit height is delivered exactly, and the title and legend then shrink the map rather than the canvas.\n"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4,
+          "default": 1,
+          "description": "PNG raster multiplier: the PNG is exactly round(width×scale) × round(height×scale) pixels. It has no effect on SVG output, but it is still tier-capped.\n"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "png",
+            "svg"
+          ],
+          "default": "png",
+          "description": "SVG requires a Pro key."
+        }
+      },
+      "description": "Caps: width×scale ≤ 8192, height×scale ≤ 8192, and (width×scale)×(height×scale) ≤ 4096×4096 = 16.8M pixels. Your tier caps width, height and scale further (see Tiers).\n"
+    },
+    "onUnmatched": {
+      "type": "string",
+      "enum": [
+        "warn",
+        "error"
+      ],
+      "default": "warn",
+      "description": "warn = render anyway (unmatched regions get the no-data fill) and report. error = 400 with per-key suggestions. Recommended for production pipelines: error. Exception: in choropleth mode, ZERO matched keys is a 400 even under warn.\n"
+    },
+    "dryRun": {
+      "type": "boolean",
+      "default": false,
+      "description": "Return the matching report + computed breaks as JSON. No image, no quota."
+    }
+  }
+}

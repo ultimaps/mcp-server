@@ -1,0 +1,85 @@
+{
+  "manifest_version": "0.4",
+  "name": "ultimaps",
+  "display_name": "Ultimaps",
+  "version": "0.1.0",
+  "description": "Turn your data into map images of countries, states, counties and ZIP codes, right in the conversation.",
+  "long_description": "Ask for a map in plain words and get the finished image back in the conversation. Ultimaps has 100+ maps, from the world and continents down to states, provinces, counties and US ZIP code areas.\n\nPaste numbers and you get a choropleth, with the color scale and legend picked for you. Give each region a label, such as a party or a currency, and you get a category map. You can also pin locations and add a title, region labels, cities or roads on selected maps, and one of 10 themes. Region names are matched even with typos, and anything that doesn't match is reported back.\n\nTry \"Map US states by population\" or \"Pin our five offices on a map of Europe.\"\n\nEach map comes with a link to Ultimaps Studio, where you can keep editing it, export it, or publish an interactive version.\n\nNo account needed: 30 maps per hour, PNG up to 1600 px, with Ultimaps attribution. A free API key raises the limits. Pro adds SVG, PNG up to 4000 px wide, and removes the attribution.",
+  "author": {
+    "name": "Ultimaps",
+    "url": "https://ultimaps.com"
+  },
+  "homepage": "https://ultimaps.com/developers/#mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ultimaps/mcp-server.git"
+  },
+  "documentation": "https://ultimaps.com/docs/api/",
+  "support": "mailto:support@ultimaps.com",
+  "icon": "icon.png",
+  "screenshots": [
+    "screenshots/sales-territory-maps.png",
+    "screenshots/choropleth-data-maps.png",
+    "screenshots/election-political-maps.png"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
+      "env": {
+        "ULTIMAPS_API_KEY": "${user_config.api_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "render_map",
+      "description": "Create a map image from your data: color regions by number or category, then add pins, a title, a legend, labels and a theme."
+    },
+    {
+      "name": "list_maps",
+      "description": "Search the 100+ maps you can create, from the world down to counties and ZIP codes."
+    },
+    {
+      "name": "get_map_regions",
+      "description": "List a map's regions and the names and codes it accepts."
+    }
+  ],
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "Ultimaps API key",
+      "description": "Optional. Leave empty to start without an account: 30 maps per hour, PNG up to 1600 px, with Ultimaps attribution. Create a key in Ultimaps Studio → Workspace → API.",
+      "sensitive": true,
+      "required": false
+    }
+  },
+  "keywords": [
+    "maps",
+    "map maker",
+    "choropleth",
+    "thematic map",
+    "data visualization",
+    "geography",
+    "US counties",
+    "ZIP codes"
+  ],
+  "license": "MIT",
+  "privacy_policies": [
+    "https://ultimaps.com/privacy-policy/"
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  }
+}
