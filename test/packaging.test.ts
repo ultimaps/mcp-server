@@ -17,7 +17,14 @@ const server = read('server.json');
 describe('release metadata', () => {
   it('carries one version across package.json, manifest.json and server.json', () => {
     expect(manifest.version).toBe(pkg.version);
-    expect(server.version).toBe(pkg.version);
+    // The registry entry may run ahead of npm: registry versions are immutable,
+    // so a metadata-only update (adding the hosted remote, 0.1.1) takes a new
+    // one without a package release. The next release bumps past it and
+    // scripts/bundle.mjs then requires all of them to match again.
+    const semver = (v: string) => v.split('.').map(Number);
+    const [server_, package_] = [semver(server.version), semver(pkg.version)];
+    const cmp = server_.map((part, i) => part - (package_[i] ?? 0)).find((d) => d !== 0) ?? 0;
+    expect(cmp).toBeGreaterThanOrEqual(0);
     // The registry entry repeats the version once per package it lists, so the
     // list has to be non-empty for the comparison below to mean anything.
     expect(server.packages.length).toBeGreaterThan(0);

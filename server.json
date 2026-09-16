@@ -9,7 +9,7 @@
     { "src": "https://ultimaps.com/android-chrome-192x192.png", "mimeType": "image/png", "sizes": ["192x192"] },
     { "src": "https://ultimaps.com/android-chrome-512x512.png", "mimeType": "image/png", "sizes": ["512x512"] }
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
       "registryType": "npm",
@@ -23,6 +23,20 @@
           "isRequired": false,
           "isSecret": true,
           "format": "string"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.ultimaps.com/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Optional. Bearer <your Ultimaps API key> for plan quotas. Without a key you get 30 maps per hour per conversation, with attribution.",
+          "isRequired": false,
+          "isSecret": true
         }
       ]
     }
