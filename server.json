@@ -9,12 +9,12 @@
     { "src": "https://ultimaps.com/android-chrome-192x192.png", "mimeType": "image/png", "sizes": ["192x192"] },
     { "src": "https://ultimaps.com/android-chrome-512x512.png", "mimeType": "image/png", "sizes": ["512x512"] }
   ],
-  "version": "0.1.1",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@ultimaps/mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         {

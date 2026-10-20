@@ -12,7 +12,7 @@ No account needed. Without an API key the server uses the keyless tier. Set `ULT
 
 | Tool | What it does |
 |------|--------------|
-| `render_map` | Renders a map as an image (PNG, or SVG with a Pro key), shown inline when it is small enough. Choropleth (numbers), categories (labels) or explicit colors, plus pins, title, legend, theme, labels and extra layers. Region names are matched fuzzily, and every correction or miss is reported with suggestions. `dryRun: true` previews matching and the color plan without rendering. |
+| `render_map` | Renders a map as an image (PNG, or SVG with a Pro key), shown inline when it is small enough. Choropleth (numbers), categories (labels) or explicit colors, plus pins, title, a legend with its own heading, theme, region labels (names, values or both) and extra layers. Region names are matched fuzzily, and every correction or miss is reported with suggestions. `dryRun: true` previews matching and the color plan without rendering. |
 | `list_maps` | The map catalog: `{id, title, regionType, layers, regionCount, labels}`, searchable with `query`. |
 | `get_map_regions` | One map's region keys and titles, 200 per page, searchable by key, title or alias. |
 
@@ -130,7 +130,7 @@ Dry runs skip the monthly quota but still count against rate limits. When five o
 ## What a render returns
 
 - **The image**, inline, when it is small enough (781 KB for PNG, 98 KB for SVG). The default 1200 px width usually fits. Every render is also written to `<tmpdir>/ultimaps-mcp/` and the path is in the result, so in a terminal client the file is the thing you can actually open. Nothing is re-rendered or resampled on your behalf.
-- **A text report**: auto-corrected and unmatched region keys with suggestions, the resolved choropleth plan, warnings (such as `layer_unavailable`), a link to open the map in Ultimaps Studio for editing, and the render id for support.
+- **A text report**: auto-corrected and unmatched region keys with suggestions, the resolved choropleth plan, warnings (such as `layer_unavailable` or `labels_overlap`), a link to open the map in Ultimaps Studio for editing, and the render id for support.
 - **An embeddable image URL** for keyless PNG renders whose whole spec fits a ~2,000-character URL, so small datasets only. The URL carries the spec, not the image, and renders keyless, so it is not offered when a key is set.
 - **`structuredContent`** with the same report as data, described by the tool's `outputSchema`.
 

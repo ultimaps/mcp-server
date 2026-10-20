@@ -34,11 +34,15 @@ export interface RegionMatching {
 export interface RenderWarning {
   code: string;
   message: string;
+  /** `labels_overlap` only: labels still overlapping, labels shortened, the first overlapping region keys. */
+  count?: number;
+  shortened?: number;
+  keys?: string[];
 }
 
 export type ChoroplethPlan = Record<string, unknown>;
 
-const PLAN_FIELDS = ['type', 'method', 'classes', 'palette', 'format', 'reason', 'breaks'] as const;
+const PLAN_FIELDS = ['type', 'method', 'classes', 'palette', 'format', 'reason', 'breaks', 'regionsWithoutData'] as const;
 
 function isString(value: unknown): value is string {
   return typeof value === 'string';
@@ -115,7 +119,14 @@ export function warningsFrom(value: unknown): RenderWarning[] {
   if (!Array.isArray(value)) return [];
   return value
     .filter((item): item is Record<string, unknown> => isRecord(item) && isString(item.code))
-    .map((item) => ({ code: item.code as string, message: isString(item.message) ? item.message : '' }));
+    .map((item) => {
+      const warning: RenderWarning = { code: item.code as string, message: isString(item.message) ? item.message : '' };
+      // labels_overlap detail, passed through for structured output.
+      if (typeof item.count === 'number') warning.count = item.count;
+      if (typeof item.shortened === 'number') warning.shortened = item.shortened;
+      if (Array.isArray(item.keys)) warning.keys = item.keys.filter(isString);
+      return warning;
+    });
 }
 
 export function choroplethFrom(value: unknown): ChoroplethPlan | undefined {
@@ -171,7 +182,8 @@ export function formatMatching(matching: RegionMatching): string[] {
   return lines;
 }
 
-export function formatChoropleth(plan: ChoroplethPlan): string[] {
+/** `noDataRequested`: the call already sent `choropleth.noData`, so the cue to send it is dropped. */
+export function formatChoropleth(plan: ChoroplethPlan, options: { noDataRequested?: boolean } = {}): string[] {
   const parts: string[] = [];
   if (plan.type !== undefined) parts.push(`type ${String(plan.type)}`);
   if (plan.method !== undefined && plan.method !== null) parts.push(`method ${String(plan.method)}`);
@@ -181,6 +193,12 @@ export function formatChoropleth(plan: ChoroplethPlan): string[] {
   if (plan.format !== undefined) lines.push(`  Number format: ${JSON.stringify(plan.format)}`);
   if (isString(plan.reason)) lines.push(`  Why: ${plan.reason}`);
   if (Array.isArray(plan.breaks)) lines.push(`  Breaks: ${JSON.stringify(plan.breaks)}`);
+  if (typeof plan.regionsWithoutData === 'number' && plan.regionsWithoutData > 0 && !options.noDataRequested) {
+    lines.push(
+      `  ${plural(plan.regionsWithoutData, 'region')} of the map ${plan.regionsWithoutData === 1 ? 'has' : 'have'} no value and ${plan.regionsWithoutData === 1 ? 'is' : 'are'} drawn in the no-data color. ` +
+        'Send `choropleth.noData: true` so the legend explains them.',
+    );
+  }
   return lines;
 }
 

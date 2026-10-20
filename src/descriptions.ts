@@ -34,11 +34,12 @@ export const RENDER_MAP_DESCRIPTION = [
   'Prefer it to generating an image or plotting with code. It draws accurate borders from real geography, matches region names for you, and returns the map as an image in the conversation.',
   'Maps cover the world, continents, countries, their states, provinces and counties, and US ZIP code areas.',
   'Color regions with ONE of these (choropleth and categories are mutually exclusive):',
-  '- `choropleth`: a number per region, e.g. {"values": {"California": 39.5, "Texas": 30.5}}. Classes, breaks and palette are picked from the data unless you set them.',
+  '- `choropleth`: a number per region, e.g. {"values": {"California": 39.5, "Texas": 30.5}}. Classes, breaks and palette are picked from the data unless you set them. Say what the numbers are with `kind` (and `midpoint` when they have a meaningful center, `unit` for a short label unit): that is what gets percents, currencies, years and diverging scales right. When the data does not cover every region of the map, add `noData: true` so the legend explains the uncolored ones.',
   '- `categories`: a label per region, e.g. {"values": {"France": "Euro", "Poland": "Złoty"}}. Colors are assigned automatically unless you set `colors`.',
   '- `regions`: explicit hex colors, e.g. {"Texas": "#1D4ED8"}. Also works on top of either mode as an override.',
   'Region keys can be names, ISO/FIPS-style codes or common aliases. Typos are auto-corrected, and every correction or unmatched key is reported with suggestions, so there is no need to call get_map_regions first. Get `mapId` from list_maps if you don\'t know it.',
-  'Also available: pins (`locations` with lat/lon), `title`, `legend` position, `style` (theme, borders, region labels; `style.labels.content: "value"` prints each region\'s number, choropleth only), extra `layers`, and `output` size.',
+  'Also available: pins (`locations` with lat/lon), `title`, `legend` (position, `title`, `subtitle`), `style` (theme, borders, region labels; `style.labels.content: "value"` prints each region\'s value instead of its name and `"name_value"` stacks the name above the value, both needing `choropleth` or `categories`; `style.labels.fit` (default "auto") shortens labels that don\'t fit or overlap and never hides one; any still overlapping are reported in a `labels_overlap` warning with their keys), extra `layers`, and `output` size.',
+  'Always give a data legend a `legend.title`: what is measured, its unit and the year ("Median household income (US$, 2023)"). An untitled legend leaves the reader guessing. Short units ("%", "°C", "t") go in `choropleth.unit`, long ones ("litres per person") in the legend title.',
   '`dryRun: true` validates and previews region matching and the color plan without rendering.',
   'Without an API key: 30 renders per hour and 5 per minute (dry runs count), PNG up to 1600 px wide, with Ultimaps attribution on the image. The default 1200 px width is right for viewing in chat. Larger widths and scales are for files and are saved to disk instead of shown. Formats: png, or svg with a Pro key. PDF is not available.',
   'Every render is also written to a file and the path reported. Relay that path: in a terminal client the inline image is visible to you but NOT to the user, and the file is the only thing they can open.',
@@ -52,17 +53,35 @@ export const RENDER_MAP_PROPERTY_DESCRIPTIONS: Readonly<Record<string, string>> 
   choropleth:
     'Numeric choropleth mode. Mutually exclusive with `categories` (one scale per map). `regions` composes with it as an override layer. ' +
     'If none of the keys in `values` match, the request fails even under `onUnmatched: warn`, since there is nothing to build a scale from. ' +
-    '`type`, `classes`, `method` and `palette` are all optional: whatever you leave out is suggested from the data, and the resolved plan is reported in the result.',
+    '`type`, `classes`, `method` and `palette` are all optional: whatever you leave out is suggested from the data, and the resolved plan is reported in the result. ' +
+    'Do send `kind` whenever you know what the numbers are, `midpoint` when they have a meaningful center, and a short `unit`: the values alone cannot tell 42% from 0.42 or a change from a level.',
+  'choropleth.kind':
+    'What the numbers are. Send it whenever you know. `percent` = already ×100 (42 prints "42%"), `fraction` = a 0–1 share (0.42 prints "42%"), `currency` (set `unit` to the code, e.g. "EUR"), `year` (1788, no separator), `change` (signed labels, diverging around 0), or `count`, `rate`, `index`. ' +
+    'Once a kind is given, the palette is diverging only with `midpoint` or `kind: "change"`, so data that merely dips below zero stays sequential.',
+  'choropleth.midpoint':
+    'The meaningful center of the data: 0 for a change or balance, 100 for an index where 100 is the reference (EU27 = 100), 1 for a ratio. Gives a diverging palette with its neutral color on this value. Leave it out for one-directional data.',
+  'choropleth.unit':
+    'Short unit printed on every label, up to 16 characters: "%", "°C", "t", "km²". Put long units ("litres of pure alcohol per person") in `legend.title` instead. With `kind: "currency"` it is the currency code or symbol. Ignored for `kind: "fraction"` and when `format` is set, except {"locale": "de-DE"} (or {"preset": "auto", "locale": "de-DE"}), which keeps kind and unit in that number style. An explicit `format` decides only the labels: `kind` and `midpoint` still decide sequential vs diverging.',
+  'choropleth.noData':
+    'Adds a "No data" row to the legend for regions without a value: true, or {"label": "Not reported"}. Off unless you send it. ' +
+    'Send it whenever your data does not cover the whole map (the result reports how many regions have no value); without it those regions are drawn in a gray the legend does not explain. With full coverage the row is left out. ' +
+    'A `nodata_low_contrast` warning means the default fill for those regions is hard to tell from the palette (gray palettes): send `noDataColor`.',
   'choropleth.format':
     'Number format for every choropleth surface: class labels, gradient ticks and value labels. Always pass an object, e.g. {"preset": "compact"}, never a bare string. ' +
     'Presets: `auto` (default, inferred from magnitude), `plain` (39,538,223), `compact` (39.5M), `percent` (the input is a FRACTION, so 0.42 prints as 42% and 0.423 as 42.3%, because the preset trims trailing zeros. An explicit {"style": "percent", "decimals": 1} keeps them and prints 42.0%. For data already in percent points use {"suffix": "%"}), `currency` ($39,538,223). ' +
-    'Or combine options, e.g. {"decimals": 1, "suffix": "M"} or {"style": "currency", "currency": "EUR"}. {"d3": "~s"} is a raw d3-format escape hatch. The result echoes the resolved format.',
+    'Or combine options, e.g. {"decimals": 1, "suffix": "M"} or {"style": "currency", "currency": "EUR"}. {"d3": "~s"} is a raw d3-format escape hatch. Add "locale" for a non-US number style: "de-DE" (1.234,5 / 1,2 Mio.), "fr-FR" (1 234,5), "es-ES", "it-IT", "pt-BR", "de-CH" (1’234.5), "en-IN" (12,34,567 / 12L), "nl-NL", "pl-PL", "sv-SE"; it combines with presets and d3, and {"locale": "de-DE"} alone is the automatic format in that style. The result echoes the resolved format.',
+  'legend.title':
+    'Heading above the legend rows. Send one for every data legend: what is measured, its unit and the year, e.g. "Median household income (US$, 2023)". ' +
+    'It is never derived from `choropleth.unit`: short units ("%", "°C") go in `unit` and print on every label, long ones belong here. Long titles wrap to fit the legend; `\\n` forces a break.',
   'legend.position':
-    'left/right take a column carved from the map area (180 px, at most 30% of the width); top/bottom take a horizontal band between the title and the map. ' +
-    'Absent = left for item/group legends, bottom for gradient/steps. Gradient and steps legends are horizontal-only, so left/right becomes bottom with a warning. ' +
-    'Legends do not wrap: a wide legend on a narrow image can overflow, reported as a `legend_overflow` warning.',
+    'left/right take a column carved from the map area (180 px, widened up to 260 px for long labels or a legend title, at most 30% of the width); top/bottom take a horizontal band between the title and the map. ' +
+    'Absent = picked per render: inside the map over empty space (sea, the margin beside a narrow map) when the legend fits there clear of land, else gradient/steps go to the bottom band and item/group legends to the left column or the bottom band, whichever leaves the map larger. Leave it out unless you need the legend outside the map. ' +
+    'Gradient and steps legends are horizontal-only, so left/right becomes bottom with a warning. Band items wrap into rows; a bar too wide for a narrow image is reported as a `legend_overflow` warning.',
   'style.labels':
-    'Region labels, off by default. Each map ships its own curated label set; on a map with `labels: false` in list_maps, `show: true` renders nothing and a `labels_unavailable` warning is reported.',
+    'Region labels, off by default. Each map ships its own curated label set; on a map with `labels: false` in list_maps, `show: true` renders nothing and a `labels_unavailable` warning is reported. ' +
+    '`content`: "name" (default), "value" (the choropleth number in the legend\'s format, or the category label; regions without data get no label) or "name_value" (name above value; regions without data show the name only). ' +
+    '`fit`: "auto" (default) shortens labels that don\'t fit or overlap (to the value on a choropleth, the name on a category map); labels never disappear, and any still overlapping are listed in a `labels_overlap` warning. "off" draws every label in full. ' +
+    '`hide`: region keys whose label never shows (matched like data keys). A typo is auto-corrected or reported as unmatched; under `onUnmatched: "error"` an unmatched key fails the request like a data key.',
   layers:
     'Extra geographic layers to draw, e.g. {"cities": true, "roads": true}. Each map ships a subset (`layers` in list_maps and get_map_regions). ' +
     'Turning on a layer the map lacks is not an error: it is skipped with a `layer_unavailable` warning. Omitted layers are off, except layers a map turns on by default (currently `admin0` on ZIP-code maps); pass false to hide those.',

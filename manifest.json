@@ -2,7 +2,7 @@
   "manifest_version": "0.4",
   "name": "ultimaps",
   "display_name": "Ultimaps",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn your data into map images of countries, states, counties and ZIP codes, right in the conversation.",
   "long_description": "Ask for a map in plain words and get the finished image back in the conversation. Ultimaps has 100+ maps, from the world and continents down to states, provinces, counties and US ZIP code areas.\n\nPaste numbers and you get a choropleth, with the color scale and legend picked for you. Give each region a label, such as a party or a currency, and you get a category map. You can also pin locations and add a title, region labels, cities or roads on selected maps, and one of 10 themes. Region names are matched even with typos, and anything that doesn't match is reported back.\n\nTry \"Map US states by population\" or \"Pin our five offices on a map of Europe.\"\n\nEach map comes with a link to Ultimaps Studio, where you can keep editing it, export it, or publish an interactive version.\n\nNo account needed: 30 maps per hour, PNG up to 1600 px, with Ultimaps attribution. A free API key raises the limits. Pro adds SVG, PNG up to 4000 px wide, and removes the attribution.",
   "author": {

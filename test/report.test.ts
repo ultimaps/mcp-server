@@ -73,6 +73,15 @@ describe('body parsing', () => {
     expect(formatChoropleth(plan!)[0]).toBe('Choropleth plan: type steps, method quantile, 5 classes, palette blues.');
     expect(choroplethFrom(null)).toBeUndefined();
   });
+
+  it('points at noData when regions have no value (E2)', () => {
+    const plan = choroplethFrom({ type: 'steps', classes: 5, palette: 'blues', regionsWithoutData: 39 })!;
+    expect(plan.regionsWithoutData).toBe(39);
+    expect(formatChoropleth(plan).join('\n')).toContain('39 regions of the map have no value');
+    expect(formatChoropleth(plan).join('\n')).toContain('`choropleth.noData: true`');
+    expect(formatChoropleth({ ...plan, regionsWithoutData: 0 }).join('\n')).not.toContain('noData');
+    expect(formatChoropleth(plan, { noDataRequested: true }).join('\n')).not.toContain('noData');
+  });
 });
 
 describe('header links and limits', () => {

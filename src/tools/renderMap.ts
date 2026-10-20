@@ -103,10 +103,12 @@ function trailerLines(output: RenderOutput, hasApiKey: boolean): string[] {
   return lines;
 }
 
-function reportLines(output: RenderOutput): string[] {
+function reportLines(output: RenderOutput, args: Record<string, unknown>): string[] {
+  const choropleth = args.choropleth;
+  const noDataRequested = typeof choropleth === 'object' && choropleth !== null && !!(choropleth as Record<string, unknown>).noData;
   return [
     ...formatMatching(output.regionMatching),
-    ...(output.choropleth ? formatChoropleth(output.choropleth) : []),
+    ...(output.choropleth ? formatChoropleth(output.choropleth, { noDataRequested }) : []),
     ...formatWarnings(output.warnings),
   ];
 }
@@ -173,7 +175,7 @@ async function imageResult(
 
   const content: ContentBlock[] = [];
   if (inline) content.push({ type: 'image', data: body.toString('base64'), mimeType: format === 'png' ? 'image/png' : 'image/svg+xml' });
-  content.push({ type: 'text', text: [headline, ...reportLines(output), ...trailerLines(output, hasApiKey)].join('\n') });
+  content.push({ type: 'text', text: [headline, ...reportLines(output, args), ...trailerLines(output, hasApiKey)].join('\n') });
   if (output.embedUrl) {
     content.push({
       type: 'resource_link',
@@ -196,7 +198,7 @@ function legendLines(legend: unknown): string[] {
   return [];
 }
 
-function dryRunResult(response: ApiResponse, deps: ToolDeps): CallToolResult {
+function dryRunResult(response: ApiResponse, deps: ToolDeps, args: Record<string, unknown>): CallToolResult {
   let payload: unknown;
   try {
     payload = JSON.parse(response.body.toString('utf8'));
@@ -225,7 +227,7 @@ function dryRunResult(response: ApiResponse, deps: ToolDeps): CallToolResult {
   const text = [
     `Dry run for ${mapId}: nothing was rendered.`,
     counts,
-    ...reportLines(output),
+    ...reportLines(output, args),
     ...legendLines(output.legend),
     ...trailerLines(output, hasApiKey),
   ].join('\n');
@@ -253,7 +255,7 @@ export function createRenderMap(deps: ToolDeps): (args: unknown) => Promise<Call
       case 'image/svg+xml':
         return imageResult(response, body, 'svg', deps);
       case 'application/json':
-        return dryRunResult(response, deps);
+        return dryRunResult(response, deps, body);
       default:
         return errorResult(
           `Unexpected response from the Ultimaps API: status ${response.status}, content type "${response.contentType || 'none'}".`,
