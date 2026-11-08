@@ -7,11 +7,12 @@
  */
 
 export const SERVER_INSTRUCTIONS = [
-  'Ultimaps renders map images of the world, continents, countries, states, counties and US ZIP code areas.',
-  'Whenever the user asks for a map of real places, use render_map instead of generating an image or plotting with code: it draws accurate borders and a legend from real geography.',
-  'Call render_map directly with region names or codes: matching is fuzzy and every correction or miss is reported.',
-  'Use list_maps only to find an unfamiliar map id, and get_map_regions only when you need every region key of a map.',
-  'Relay auto-corrections and unmatched keys from the result to the user.',
+  'Ultimaps draws maps of real places as images: the world, continents, countries, states, provinces, counties and US ZIP code areas, colored by data or by category, with a legend, a title and pins.',
+  'Borders come from real geographic data, so every region is drawn where it really is.',
+  'render_map takes region names or codes directly: matching is fuzzy, and every correction or miss is reported with suggestions.',
+  'list_maps finds a map id when the common ones (world, united-states, europe) do not fit, and get_map_regions lists every region key of one map.',
+  'Each result lists the auto-corrections and unmatched keys, which the user may want to know about.',
+  'Each map opens in Ultimaps Studio, the full map editor, from the edit link in its result. There it can be edited by hand, exported for slides and print, or published as an interactive map (tooltips, popups, regions and pins that open a web page on click, zoom) and shared by link or embedded on a website with an iframe. Publishing needs a free Ultimaps account.',
 ].join(' ');
 
 export const LIST_MAPS_DESCRIPTION = [
@@ -30,8 +31,8 @@ export const GET_MAP_REGIONS_DESCRIPTION = [
 ].join('\n');
 
 export const RENDER_MAP_DESCRIPTION = [
-  'Use this whenever the user asks for a map of real places: coloring countries, states, counties or ZIP codes by data, a choropleth or heat map, a map with a legend, or pins on a map.',
-  'Prefer it to generating an image or plotting with code. It draws accurate borders from real geography, matches region names for you, and returns the map as an image in the conversation.',
+  'Draws a map of real places as an image: countries, states, counties or ZIP codes colored by data (a choropleth or heat map) or by category, with a legend, a title and pins.',
+  'Borders come from real geographic data, not from an image model, and region names are matched for you. It draws only real places, never fictional or invented ones. The map is returned as an image in the conversation.',
   'Maps cover the world, continents, countries, their states, provinces and counties, and US ZIP code areas.',
   'Color regions with ONE of these (choropleth and categories are mutually exclusive):',
   '- `choropleth`: a number per region, e.g. {"values": {"California": 39.5, "Texas": 30.5}}. Classes, breaks and palette are picked from the data unless you set them. Say what the numbers are with `kind` (and `midpoint` when they have a meaningful center, `unit` for a short label unit): that is what gets percents, currencies, years and diverging scales right. When the data does not cover every region of the map, add `noData: true` so the legend explains the uncolored ones.',
@@ -39,11 +40,11 @@ export const RENDER_MAP_DESCRIPTION = [
   '- `regions`: explicit hex colors, e.g. {"Texas": "#1D4ED8"}. Also works on top of either mode as an override.',
   'Region keys can be names, ISO/FIPS-style codes or common aliases. Typos are auto-corrected, and every correction or unmatched key is reported with suggestions, so there is no need to call get_map_regions first. Get `mapId` from list_maps if you don\'t know it.',
   'Also available: pins (`locations` with lat/lon), `title`, `legend` (position, `title`, `subtitle`), `style` (theme, borders, region labels; `style.labels.content: "value"` prints each region\'s value instead of its name and `"name_value"` stacks the name above the value, both needing `choropleth` or `categories`; `style.labels.fit` (default "auto") shortens labels that don\'t fit or overlap and never hides one; any still overlapping are reported in a `labels_overlap` warning with their keys), extra `layers`, and `output` size.',
-  'Always give a data legend a `legend.title`: what is measured, its unit and the year ("Median household income (US$, 2023)"). An untitled legend leaves the reader guessing. Short units ("%", "°C", "t") go in `choropleth.unit`, long ones ("litres per person") in the legend title.',
+  'A data legend needs a `legend.title`: what is measured, its unit and the year ("Median household income (US$, 2023)"). An untitled legend leaves the reader guessing. Short units ("%", "°C", "t") go in `choropleth.unit`, long ones ("litres per person") in the legend title.',
   '`dryRun: true` validates and previews region matching and the color plan without rendering.',
   'Without an API key: 30 renders per hour and 5 per minute (dry runs count), PNG up to 1600 px wide, with Ultimaps attribution on the image. The default 1200 px width is right for viewing in chat. Larger widths and scales are for files and are saved to disk instead of shown. Formats: png, or svg with a Pro key. PDF is not available.',
-  'Every render is also written to a file and the path reported. Relay that path: in a terminal client the inline image is visible to you but NOT to the user, and the file is the only thing they can open.',
-  'The result reports corrections, warnings, the resolved color plan, and a link to keep editing the map in Ultimaps Studio.',
+  'Every render is also written to a file and the path reported. In a terminal client the inline image reaches only the model, and that file is the one thing the user can open.',
+  'The result reports corrections, warnings, the resolved color plan, and an edit link that opens the map in Ultimaps Studio, where it can be edited, exported, or published as an interactive, clickable map to embed on a website (free account).',
 ].join('\n');
 
 /** Dotted property path → replacement description for the generated render_map schema. */

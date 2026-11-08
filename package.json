@@ -1,11 +1,11 @@
 {
   "name": "@ultimaps/mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP server that turns data into map images: choropleth, category and pin maps of the world, countries, states, counties and ZIP codes.",
   "mcpName": "com.ultimaps/mcp",
   "license": "MIT",
   "author": "Ultimaps (https://ultimaps.com)",
-  "homepage": "https://ultimaps.com/developers/#mcp",
+  "homepage": "https://ultimaps.com/mcp/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ultimaps/mcp-server.git"

@@ -591,6 +591,10 @@
         "cities": {
           "type": "boolean",
           "description": "Major cities as labeled points."
+        },
+        "admin1": {
+          "type": "boolean",
+          "description": "Surrounding states as a filled area (US ZIP-code maps, where `admin0` is the map's own land)."
         }
       }
     },

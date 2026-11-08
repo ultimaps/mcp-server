@@ -95,7 +95,7 @@ function trailerLines(output: RenderOutput, hasApiKey: boolean): string[] {
   }
   if (output.editUrl) {
     const signIn = hasApiKey ? ' (sign in with an account in the API key\'s workspace)' : '';
-    lines.push(`Open in Ultimaps Studio to edit or export: ${output.editUrl}${signIn}`);
+    lines.push(`Edit link: open in Ultimaps Studio to edit, export, or publish as an interactive map to embed on a website: ${output.editUrl}${signIn}`);
   }
   const nudge = keyNudge(hasApiKey, output.keylessRemaining);
   if (nudge) lines.push(nudge);

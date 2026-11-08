@@ -3,18 +3,18 @@
   "name": "com.ultimaps/mcp",
   "title": "Ultimaps",
   "description": "Create choropleth, category and pin maps of countries, states, counties and ZIP codes as images.",
-  "websiteUrl": "https://ultimaps.com/developers/#mcp",
+  "websiteUrl": "https://ultimaps.com/mcp/",
   "repository": { "url": "https://github.com/ultimaps/mcp-server", "source": "github" },
   "icons": [
     { "src": "https://ultimaps.com/android-chrome-192x192.png", "mimeType": "image/png", "sizes": ["192x192"] },
     { "src": "https://ultimaps.com/android-chrome-512x512.png", "mimeType": "image/png", "sizes": ["512x512"] }
   ],
-  "version": "0.2.0",
+  "version": "0.2.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@ultimaps/mcp",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         {

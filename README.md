@@ -6,7 +6,9 @@ An [MCP](https://modelcontextprotocol.io) server for [Ultimaps](https://ultimaps
 
 No account needed. Without an API key the server uses the keyless tier. Set `ULTIMAPS_API_KEY` for plan quotas and larger or unbranded output.
 
-**Can't run a local command?** In ChatGPT (developer mode), claude.ai or any client that connects to remote MCP servers, add the hosted server instead: `https://api.ultimaps.com/mcp`. In ChatGPT, turn it on in each conversation where you want maps. It has the same three tools and nothing to install. See [Hosted server](#hosted-server). This package is the local version: requests come from your own IP address with your own key, and every image is saved to a file on your computer.
+**Using ChatGPT?** Ultimaps is in ChatGPT's app directory: add [Ultimaps in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6adb80f4204c8191ae0c0a0ea6b4784d), then type @ in a conversation and pick Ultimaps. You don't need this package.
+
+**Can't run a local command?** In claude.ai or any client that connects to remote MCP servers, add the hosted server instead: `https://api.ultimaps.com/mcp`. It has the same three tools and nothing to install. See [Hosted server](#hosted-server). This package is the local version: requests come from your own IP address with your own key, and every image is saved to a file on your computer.
 
 ## Tools
 
@@ -88,7 +90,7 @@ Download `ultimaps-<version>.mcpb` from the [latest release](https://github.com/
 
 ### Hosted server
 
-You don't need this package to use the hosted server. Add the URL to your client:
+You don't need this package to use the hosted server. In ChatGPT, add [the Ultimaps app](https://chatgpt.com/plugins/plugin_asdk_app_6adb80f4204c8191ae0c0a0ea6b4784d) from ChatGPT's app directory. In other clients, add the URL:
 
 ```sh
 claude mcp add --transport http ultimaps https://api.ultimaps.com/mcp
@@ -107,7 +109,7 @@ Clients with a config file take the URL alone, for example `~/.cursor/mcp.json`:
 }
 ```
 
-The hosted server sends a key as an `Authorization` header, not as `ULTIMAPS_API_KEY`. In ChatGPT and claude.ai you can't set headers, so renders there use the anonymous tier: PNG up to 1600 px with attribution, up to 30 per hour per conversation. Every render also comes back as an image link that expires after 30 days. Images too large for the conversation, and all SVGs, come back only as the link. ChatGPT doesn't show images returned by tools, so the link is how you see the map there.
+The hosted server sends a key as an `Authorization` header, not as `ULTIMAPS_API_KEY`. In ChatGPT and claude.ai you can't set headers, so renders there use the anonymous tier: PNG up to 1600 px with attribution, up to 30 per hour per conversation. Every render also comes back as an image link that expires after 30 days. Images too large for the conversation, and all SVGs, come back only as the link. In ChatGPT and claude.ai the map shows in an Ultimaps card with an Edit in Ultimaps Studio button. Setup steps for each client: [ultimaps.com/mcp](https://ultimaps.com/mcp/).
 
 ## Configuration
 

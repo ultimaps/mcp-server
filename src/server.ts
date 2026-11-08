@@ -47,6 +47,16 @@ function advertisedInput(json: JsonSchema) {
   return fromJsonSchema(json, passThroughValidator);
 }
 
+/** Read-only lookups in the bounded map catalog. */
+const CATALOG_ANNOTATIONS = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
+
+/**
+ * render_map writes the image to a local file, and the API keeps the request
+ * so Ultimaps Studio can reopen it, so it is not read-only. It only adds:
+ * nothing is overwritten or deleted. The embeddable image URL is public.
+ */
+const RENDER_ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
+
 export function createServer(deps: ToolDeps): McpServer {
   const server = new McpServer(
     { name: 'ultimaps', title: 'Ultimaps', version: deps.config.version, websiteUrl: 'https://ultimaps.com' },
@@ -59,7 +69,7 @@ export function createServer(deps: ToolDeps): McpServer {
       title: 'List maps',
       description: LIST_MAPS_DESCRIPTION,
       inputSchema: advertisedInput(LIST_MAPS_INPUT_SCHEMA),
-      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+      annotations: CATALOG_ANNOTATIONS,
     },
     createListMaps(deps),
   );
@@ -70,7 +80,7 @@ export function createServer(deps: ToolDeps): McpServer {
       title: 'Get map regions',
       description: GET_MAP_REGIONS_DESCRIPTION,
       inputSchema: advertisedInput(GET_MAP_REGIONS_INPUT_SCHEMA),
-      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+      annotations: CATALOG_ANNOTATIONS,
     },
     createGetMapRegions(deps),
   );
@@ -82,7 +92,7 @@ export function createServer(deps: ToolDeps): McpServer {
       description: RENDER_MAP_DESCRIPTION,
       inputSchema: advertisedInput(RENDER_MAP_INPUT_SCHEMA),
       outputSchema: fromJsonSchema(RENDER_MAP_OUTPUT_SCHEMA),
-      annotations: { readOnlyHint: true, openWorldHint: true },
+      annotations: RENDER_ANNOTATIONS,
     },
     createRenderMap(deps),
   );

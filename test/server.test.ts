@@ -35,23 +35,24 @@ function descriptionsOf(node: unknown, found: string[] = []): string[] {
 }
 
 describe('MCP server over the protocol', () => {
-  it('advertises exactly three read-only tools with the flattened render schema', async () => {
+  it('advertises the three tools, render_map as an additive write, with the flattened render schema', async () => {
     const client = await connect(fakeDeps().deps);
 
     const { tools } = await client.listTools();
 
     expect(tools.map((tool) => tool.name).sort()).toEqual(['get_map_regions', 'list_maps', 'render_map']);
     for (const tool of tools) {
-      expect(tool.annotations).toMatchObject({ readOnlyHint: true, openWorldHint: true });
       expect(tool.title).toBeTruthy();
+      if (tool.name !== 'render_map') {
+        expect(tool.annotations).toEqual({ readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });
+      }
     }
     const render = tools.find((tool) => tool.name === 'render_map')!;
     expect(render.inputSchema).toEqual(RENDER_MAP_INPUT_SCHEMA);
     expect(render.inputSchema).not.toHaveProperty('not');
     expect(render.inputSchema).not.toHaveProperty('dependentSchemas');
     expect(render.outputSchema).toBeDefined();
-    expect(render.annotations).not.toHaveProperty('idempotentHint');
-    expect(tools.find((tool) => tool.name === 'list_maps')!.annotations).toMatchObject({ idempotentHint: true });
+    expect(render.annotations).toEqual({ readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
   });
 
   it('never validates arguments locally: schema-invalid input reaches the API', async () => {

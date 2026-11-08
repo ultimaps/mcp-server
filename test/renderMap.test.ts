@@ -52,7 +52,7 @@ describe('render_map: PNG', () => {
     expect(text).toContain('Choropleth plan: type steps, method quantile, 2 classes, palette blues.');
     expect(text).toContain('layer_unavailable: This map has no "roads" layer.');
     expect(text).toContain('labels_unavailable: This map ships no region labels.');
-    expect(text).toContain('Open in Ultimaps Studio to edit or export: https://studio.ultimaps.com/editor?render=3f1c0a52');
+    expect(text).toContain('Edit link: open in Ultimaps Studio to edit, export, or publish as an interactive map to embed on a website: https://studio.ultimaps.com/editor?render=3f1c0a52');
     expect(text).not.toContain('keyless renders left');
     expect(result.content[2]).toMatchObject({ type: 'resource_link', mimeType: 'image/png' });
 

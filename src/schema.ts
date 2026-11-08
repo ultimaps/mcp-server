@@ -144,7 +144,7 @@ export const RENDER_MAP_OUTPUT_SCHEMA: JsonSchema = {
       },
     },
     embedUrl: { ...STRING, description: 'Keyless GET image URL, when the render is shareable that way.' },
-    editUrl: { ...STRING, description: 'Opens this map in Ultimaps Studio for editing or export.' },
+    editUrl: { ...STRING, description: 'Opens this map in Ultimaps Studio to edit, export, or publish it as an interactive map that can be embedded on a website.' },
     file: {
       type: 'object',
       required: ['path', 'bytes'],
